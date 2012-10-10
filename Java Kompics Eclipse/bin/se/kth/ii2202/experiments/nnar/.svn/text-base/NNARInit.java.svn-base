@@ -1,0 +1,22 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.beb;
+
+import se.sics.kompics.Init;
+import se.sics.kompics.launch.Topology;
+
+public class BEBInit extends Init {
+
+    final Topology topology;
+
+    public BEBInit(Topology topology) {
+        this.topology = topology;
+    }
+
+    public Topology getTopology() {
+        return topology;
+    }
+
+}

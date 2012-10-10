@@ -1,0 +1,26 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import se.sics.kompics.Event;
+
+/**
+ *
+ * @author Lars Kroll <lkr@lars-kroll.com>
+ */
+public class ReadResponse extends Event {
+    private final Object value;
+    
+    public ReadResponse(Object value) {
+        this.value = value;
+    }
+
+    /**
+     * @return the value
+     */
+    public Object getValue() {
+        return value;
+    }
+}

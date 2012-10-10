@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="oldsrc"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/kompics-core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/PerformanceScenario"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/kompics-address-0.4.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/kompics-component-java-timer-0.4.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/kompics-component-netty-network-0.4.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/kompics-port-network-0.4.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/kompics-port-timer-0.4.4-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/netty-3.2.4.Final.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/slf4j-api-1.6.4.jar"/>
+	<classpathentry kind="lib" path="/Users/sario/Documents/Uni/Research Methodology and Scientific Writing/git/Project/code/libs/slf4j-log4j12-1.6.4.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

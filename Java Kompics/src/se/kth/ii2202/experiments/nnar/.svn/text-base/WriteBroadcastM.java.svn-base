@@ -1,0 +1,36 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import se.kth.ict.id2203.beb.Deliver;
+import se.sics.kompics.address.Address;
+
+/**
+ *
+ * @author paris carbone
+ */
+class WriteBroadcastM extends Deliver {
+
+    protected int rid;
+    protected int ts;
+    protected int wr;
+    protected Object val;
+
+    WriteBroadcastM(Address src, int rid, int ts, int wr, Object val) {
+        super(src);
+        this.rid = rid;
+        this.ts = ts;
+        this.wr = wr;
+        this.val = val;
+    }
+
+    boolean isLargerThan(int ts, int wr) {
+        if (this.ts == ts) {
+            return (this.wr > wr);
+        } else {
+            return (this.ts > ts);
+        }
+    }
+}

@@ -1,0 +1,19 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import se.sics.kompics.Event;
+
+/**
+ *
+ * @author Lars Kroll <lkr@lars-kroll.com>
+ */
+public class WriteRequest extends Event {
+    protected final Object v;
+    
+    public WriteRequest(Object v) {
+        this.v = v;
+    }
+}

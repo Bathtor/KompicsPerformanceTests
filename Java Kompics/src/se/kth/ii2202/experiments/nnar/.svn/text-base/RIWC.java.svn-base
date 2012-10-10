@@ -1,0 +1,138 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import java.util.HashSet;
+import java.util.Set;
+import se.kth.ict.id2203.beb.BestEffortBroadcast;
+import se.kth.ict.id2203.beb.Broadcast;
+import se.kth.ict.id2203.nnar.GuardedSet.Guard;
+import se.kth.ict.id2203.pfd.Crash;
+import se.kth.ict.id2203.pfd.PFDetector;
+import se.kth.ict.id2203.pp2p.PerfectPointToPointLink;
+import se.kth.ict.id2203.pp2p.Pp2pSend;
+import se.sics.kompics.ComponentDefinition;
+import se.sics.kompics.Handler;
+import se.sics.kompics.Negative;
+import se.sics.kompics.Positive;
+import se.sics.kompics.address.Address;
+import se.sics.kompics.launch.Topology;
+
+/**
+ *
+ * @author Lars Kroll <lkr@lars-kroll.com>
+ */
+public class RIWC extends ComponentDefinition {
+    // component fields
+
+    Negative<NNAtomicRegister> nnar = provides(NNAtomicRegister.class);
+    Positive<BestEffortBroadcast> beb = requires(BestEffortBroadcast.class);
+    Positive<PerfectPointToPointLink> pp2p = requires(PerfectPointToPointLink.class);
+    Positive<PFDetector> pfd = requires(PFDetector.class);
+    // algorithm fields
+    private GuardedSet<Address> correct;
+    private GuardedSet<Address> writeset;
+    private Object readval;
+    private boolean reading;
+    private int ts;
+    private int wr;
+    private Object val;
+    // instance fields
+    private Topology topology;
+    private Set<Address> neighbours;
+    private Address self;
+
+    public RIWC() {
+        subscribe(onInit, control);
+        subscribe(onCrash, pfd);
+        subscribe(onRead, nnar);
+        subscribe(onWrite, nnar);
+        subscribe(onBEBDeliver, beb);
+        subscribe(onAck, pp2p);
+    }
+    Handler<RIWCInit> onInit = new Handler<RIWCInit>() {
+
+        @Override
+        public void handle(RIWCInit e) {
+            topology = e.topology;
+            self = topology.getSelfAddress();
+            neighbours = topology.getAllAddresses();
+            // algorithm init
+            ts = 0;
+            wr = 0;
+            val = null;
+            correct = new GuardedSet<Address>(neighbours);
+            correct.registerGuard(onGuard);
+            writeset = new GuardedSet<Address>();
+            writeset.registerGuard(onGuard);
+            readval = null;
+            reading = false;
+        }
+    };
+    Handler<Crash> onCrash = new Handler<Crash>() {
+
+        @Override
+        public void handle(Crash e) {
+            correct.remove(e.getProcessAddr());
+        }
+    };
+    Handler<ReadRequest> onRead = new Handler<ReadRequest>() {
+
+        @Override
+        public void handle(ReadRequest e) {
+            reading = true;
+            readval = val;
+            trigger(new Broadcast(new WriteBroadcast(self, ts, wr, val)), beb);
+        }
+    };
+    Handler<WriteRequest> onWrite = new Handler<WriteRequest>() {
+
+        @Override
+        public void handle(WriteRequest e) {
+            trigger(new Broadcast(new WriteBroadcast(self, ts + 1, rank(self), e.v)), beb);
+        }
+    };
+    Handler<WriteBroadcast> onBEBDeliver = new Handler<WriteBroadcast>() {
+
+        @Override
+        public void handle(WriteBroadcast e) {
+            if (e.isLargerThan(ts, wr)) {
+                ts = e.ts;
+                wr = e.wr;
+                val = e.val;
+            }
+            trigger(new Pp2pSend(e.getSrc(), new Ack(self)), pp2p);
+        }
+    };
+    Handler<Ack> onAck = new Handler<Ack>() {
+
+        @Override
+        public void handle(Ack e) {
+            writeset.add(e.getSource());
+        }
+        
+    };
+    
+    Handler<Guard> onGuard = new Handler<Guard>() {
+
+        @Override
+        public void handle(Guard e) {
+            if (writeset.containsAll(correct)) {
+                writeset.clear();
+                if (reading) {
+                    reading = false;
+                    trigger(new ReadResponse(readval), nnar);
+                } else {
+                    trigger(new WriteResponse(), nnar);
+                }
+            }
+        }
+        
+    };
+
+    private int rank(Address self) {
+        return self.getId();
+    }
+}

@@ -1,0 +1,20 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import se.sics.kompics.Init;
+import se.sics.kompics.launch.Topology;
+
+/**
+ *
+ * @author Lars Kroll <lkr@lars-kroll.com>
+ */
+public class RIWCInit extends Init {
+    protected final Topology topology;
+    
+    public RIWCInit(Topology topology) {
+        this.topology = topology;
+    }
+}

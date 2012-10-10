@@ -1,0 +1,234 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import se.kth.ict.id2203.beb.BestEffortBroadcast;
+import se.kth.ict.id2203.beb.Broadcast;
+import se.kth.ict.id2203.pp2p.PerfectPointToPointLink;
+import se.kth.ict.id2203.pp2p.Pp2pSend;
+import se.sics.kompics.ComponentDefinition;
+import se.sics.kompics.Handler;
+import se.sics.kompics.Negative;
+import se.sics.kompics.Positive;
+import se.sics.kompics.address.Address;
+import se.sics.kompics.launch.Topology;
+
+/**
+ *
+ * @author paris carbone
+ */
+public class RIWCM extends ComponentDefinition {
+
+    private static Logger logger = LoggerFactory.getLogger(RIWCM.class);
+    // component fields
+    Negative<NNAtomicRegister> nnar = provides(NNAtomicRegister.class);
+    Positive<BestEffortBroadcast> beb = requires(BestEffortBroadcast.class);
+    Positive<PerfectPointToPointLink> pp2p = requires(PerfectPointToPointLink.class);
+    // algorithm fields
+    private Map<Address, ReadTuple> readlist;
+    private Object readval;
+    private Object writeval;
+    private boolean reading;
+    private int acks;
+    private int rid;
+    private int ts;
+    private int wr;
+    private Object val;
+    // instance fields
+    private Topology topology;
+    private Address self;
+    private int halfN;
+
+    static class ReadTuple implements Comparable<ReadTuple> {
+
+        final Address src;
+        final int ts;
+        final int wr;
+        final Object val;
+
+        public ReadTuple(Address src, int ts, int wr, Object val) {
+            this.src = src;
+            this.ts = ts;
+            this.wr = wr;
+            this.val = val;
+        }
+
+        public Address getSrc() {
+            return src;
+        }
+
+        public int getTs() {
+            return ts;
+        }
+
+        public Object getVal() {
+            return val;
+        }
+
+        public int getWr() {
+            return wr;
+        }
+
+        @Override
+        public int compareTo(ReadTuple o) {
+            int d = this.ts - o.ts;
+            if (d == 0) {
+                return wr - o.wr;
+            }
+            return d;
+        }
+
+    }
+
+    public RIWCM() {
+        subscribe(onInit, control);
+        subscribe(onRead, nnar);
+        subscribe(onWrite, nnar);
+        subscribe(onRBEBDeliver, beb);
+        subscribe(onWBEBDeliver, beb);
+        subscribe(onValueReceived, pp2p);
+        subscribe(onAck, pp2p);
+    }
+
+    Handler<RIWCInit> onInit = new Handler<RIWCInit>() {
+
+        @Override
+        public void handle(RIWCInit e) {
+            topology = e.topology;
+            self = topology.getSelfAddress();
+            if (topology.getNodeCount() % 2 == 0) {
+                halfN = topology.getNodeCount() / 2;
+            }
+            else {
+                halfN = (topology.getNodeCount() - 1) / 2;
+            }
+            // algorithm init
+            ts = 0;
+            wr = 0;
+            val = null;
+
+            acks = 0;
+            rid = 0;
+
+            readlist = new HashMap<Address, ReadTuple>();
+
+            readval = null;
+            reading = false;
+        }
+
+    };
+    Handler<ReadRequest> onRead = new Handler<ReadRequest>() {
+
+        @Override
+        public void handle(ReadRequest e) {
+            rid++;
+            acks = 0;
+            readlist.clear();
+            reading = true;
+            trigger(new Broadcast(new ReadBroadcast(self, rid)), beb);
+        }
+
+    };
+    Handler<ReadBroadcast> onRBEBDeliver = new Handler<ReadBroadcast>() {
+
+        @Override
+        public void handle(ReadBroadcast e) {
+            trigger(new Pp2pSend(e.getSrc(), new ValueMessage(self, e.rid, ts, wr, val)), pp2p);
+        }
+
+    };
+    Handler<ValueMessage> onValueReceived = new Handler<ValueMessage>() {
+
+        @Override
+        public void handle(ValueMessage e) {
+            if (e.getRid() == rid) {
+                readlist.put(e.getSource(), new ReadTuple(e.getSource(), e.ts, e.wr, e.val));
+                if (readlist.size() > halfN) {
+                    ReadTuple max = getMaxREntry();
+                    readval = max.val;
+                    readlist.clear();
+                    if (reading) {
+                        trigger(new Broadcast(new WriteBroadcastM(self, rid, max.ts, max.wr, readval)), beb);
+                    }
+                    else {
+                        trigger(new Broadcast(new WriteBroadcastM(self, rid, max.ts + 1, rank(self), writeval)), beb);
+                    }
+                }
+            }
+            else {
+                logger.debug("Received VALUE with wrong rid = " + e.getRid() + " (expected " + rid + ")");
+            }
+        }
+
+    };
+    Handler<WriteRequest> onWrite = new Handler<WriteRequest>() {
+
+        @Override
+        public void handle(WriteRequest e) {
+            rid++;
+            writeval = e.v;
+            acks = 0;
+            readlist.clear();
+            trigger(new Broadcast(new ReadBroadcast(self, rid)), beb);
+        }
+
+    };
+    Handler<WriteBroadcastM> onWBEBDeliver = new Handler<WriteBroadcastM>() {
+
+        @Override
+        public void handle(WriteBroadcastM e) {
+            if (e.isLargerThan(ts, wr)) {
+                ts = e.ts;
+                wr = e.wr;
+                val = e.val;
+                System.out.println("Updated Register (" + ts + ", " + wr + ", " + val + ")");
+            }
+            trigger(new Pp2pSend(e.getSrc(), new Ack(self, e.rid)), pp2p);
+        }
+
+    };
+    Handler<Ack> onAck = new Handler<Ack>() {
+
+        @Override
+        public void handle(Ack e) {
+            if (e.getRid() == rid) {
+                acks++;
+                if (acks > halfN) {
+                    acks = 0;
+                    if (reading) {
+                        reading = false;
+                        trigger(new ReadResponse(readval), nnar);
+                    }
+                    else {
+                        trigger(new WriteResponse(), nnar);
+                    }
+                }
+            }
+            else {
+                logger.debug("Received ACK with wrong rid = " + e.getRid() + " (expected " + rid + ")");
+            }
+
+        }
+
+    };
+
+    private ReadTuple getMaxREntry() {
+        List<ReadTuple> sortedVals = new ArrayList(readlist.values());
+        Collections.sort(sortedVals);
+        ReadTuple minVal = sortedVals.get(0);
+        ReadTuple maxVal = sortedVals.get(sortedVals.size() - 1);
+        logger.debug("MinVal is: (" + minVal.ts + "," + minVal.wr + "," + minVal.val + ")");
+        logger.debug("MaxVal is: (" + maxVal.ts + "," + maxVal.wr + "," + maxVal.val + ")");
+        return maxVal;
+    }
+
+    private int rank(Address self) {
+        return self.getId();
+    }
+
+}

@@ -1,0 +1,28 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.beb;
+
+import java.io.Serializable;
+import se.kth.ict.id2203.pp2p.Pp2pDeliver;
+import se.sics.kompics.address.Address;
+
+/**
+ *
+ * @author paris
+ */
+public class BroadcastMessage extends Pp2pDeliver implements Serializable {
+
+    final Deliver msg;
+
+    public BroadcastMessage(Address addr, Deliver msg) {
+        super(addr);
+        this.msg = msg;
+    }
+
+    public Deliver getMsg() {
+        return msg;
+    }
+
+}

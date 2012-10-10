@@ -1,0 +1,18 @@
+package se.kth.ict.id2203.beb;
+
+import java.io.Serializable;
+import se.sics.kompics.Event;
+
+public class Broadcast extends Event implements Serializable {
+
+    private final Deliver msg;
+
+    public Broadcast(Deliver msg) {
+        this.msg = msg;
+    }
+
+    public Deliver getMsg() {
+        return msg;
+    }
+
+}

@@ -1,0 +1,28 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import se.kth.ict.id2203.beb.Deliver;
+import se.sics.kompics.address.Address;
+
+/**
+ *
+ * @author Paris Carbone
+ *
+ */
+class ReadBroadcast extends Deliver {
+
+    protected int rid;
+
+    ReadBroadcast(Address src, int id) {
+        super(src);
+        this.rid = id;
+    }
+
+    public int getRid() {
+        return rid;
+    }
+
+}

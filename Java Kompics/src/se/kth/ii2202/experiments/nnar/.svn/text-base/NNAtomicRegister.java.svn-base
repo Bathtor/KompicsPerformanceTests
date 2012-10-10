@@ -1,0 +1,21 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import se.sics.kompics.PortType;
+
+/**
+ *
+ * @author Lars Kroll <lkr@lars-kroll.com>
+ */
+public class NNAtomicRegister extends PortType {
+    {
+        request(ReadRequest.class);
+        request(WriteRequest.class);
+        indication(ReadResponse.class);
+        indication(WriteResponse.class);
+    }
+    
+}

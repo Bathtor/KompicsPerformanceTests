@@ -1,0 +1,141 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package se.kth.ict.id2203.nnar;
+
+import java.util.*;
+import se.sics.kompics.Event;
+import se.sics.kompics.Handler;
+
+/**
+ *
+ * @author Lars Kroll <lkr@lars-kroll.com>
+ */
+public class GuardedSet<T> implements Set<T> {
+
+    private HashSet<T> set;
+    private List<Handler<Guard>> handlers = new LinkedList<Handler<Guard>>();
+    private boolean active = false;
+
+    public GuardedSet() {
+        set = new HashSet<T>();
+    }
+
+    public GuardedSet(Set<T> set) {
+        this.set = new HashSet<T>();
+        this.set.addAll(set);
+    }
+
+    @Override
+    public int size() {
+        return set.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return set.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return set.contains(o);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return set.iterator();
+    }
+
+    @Override
+    public Object[] toArray() {
+        return set.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] ts) {
+        return set.toArray(ts);
+    }
+
+    @Override
+    public boolean add(T e) {
+        if (set.add(e)) {
+            triggerGuard();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        if (set.remove(o)) {
+            triggerGuard();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> clctn) {
+        return set.containsAll(clctn);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> clctn) {
+        if (set.addAll(clctn)) {
+            triggerGuard();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> clctn) {
+        if (set.retainAll(clctn)) {
+            triggerGuard();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> clctn) {
+        if (set.removeAll(clctn)) {
+            triggerGuard();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void clear() {
+        set.clear();
+        triggerGuard();
+    }
+
+    public void registerGuard(Handler<Guard> h) {
+        handlers.add(h);
+    }
+
+    public void unregisterGuard(Handler<Guard> h) {
+        handlers.remove(h);
+    }
+
+    public void clearGuards() {
+        handlers.clear();
+    }
+
+    private void triggerGuard() {
+        if (!active) { //prevent recursion
+            active = true;
+            Guard g = new Guard();
+            for (Handler<Guard> h : handlers) {
+                h.handle(g);
+            }
+            active = false;
+        }
+    }
+
+    public static class Guard extends Event {
+    }
+}

@@ -1,0 +1,62 @@
+package se.kth.ict.id2203.beb;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import se.kth.ict.id2203.pp2p.PerfectPointToPointLink;
+import se.kth.ict.id2203.pp2p.Pp2pSend;
+import se.sics.kompics.ComponentDefinition;
+import se.sics.kompics.Handler;
+import se.sics.kompics.Negative;
+import se.sics.kompics.Positive;
+import se.sics.kompics.address.Address;
+import se.sics.kompics.launch.Topology;
+
+public class SimpleBroadcast extends ComponentDefinition {
+
+    private static final Logger logger = LoggerFactory.getLogger(SimpleBroadcast.class);
+    Negative<BestEffortBroadcast> beb = provides(BestEffortBroadcast.class);
+    Positive<PerfectPointToPointLink> pp2p = requires(PerfectPointToPointLink.class);
+    Address selfAddr;
+    Topology topology;
+
+    
+
+    public SimpleBroadcast() {
+
+        subscribe(onInit, control);
+        subscribe(onUnBroadcast, beb);
+        subscribe(onMessageReceived, pp2p);
+
+    }
+
+    Handler<BEBInit> onInit = new Handler<BEBInit>() {
+
+        @Override
+        public void handle(BEBInit e) {
+            SimpleBroadcast.this.topology = e.getTopology();
+            SimpleBroadcast.this.selfAddr = topology.getSelfAddress();
+        }
+
+    };
+    Handler<Broadcast> onUnBroadcast = new Handler<Broadcast>() {
+
+        @Override
+        public void handle(Broadcast e) {
+            //logger.debug("onUnBroadcast "+e.getMsg().toString());
+            for (Address addr : topology.getAllAddresses()) {
+                //logger.debug("Unicasting to"+addr.getId());
+                trigger(new Pp2pSend(addr, new BroadcastMessage(selfAddr,e.getMsg())), pp2p);
+            }
+        }
+ 
+    };
+    Handler<BroadcastMessage> onMessageReceived = new Handler<BroadcastMessage>() {
+
+        @Override
+        public void handle(BroadcastMessage e) {
+            //logger.debug("onMsgReceived");
+            trigger(e.getMsg(), beb);
+        }
+
+    };
+}

@@ -1,0 +1,13 @@
+package se.kth.ict.id2203.beb;
+
+import se.sics.kompics.PortType;
+
+
+public class BestEffortBroadcast extends PortType {
+
+    {
+        request(Broadcast.class);
+        indication(Deliver.class);
+    }
+
+}
