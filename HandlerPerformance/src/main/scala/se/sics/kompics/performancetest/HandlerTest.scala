@@ -8,9 +8,9 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ Await, TimeoutException }
 
 class HandlerTest extends WordSpec with Matchers {
-  val repeat = 100L * 1000L * 1000L;
+  val repeat = 1000L * 1000L * 1000L;
   val maxRunDuration = Duration(1, TimeUnit.HOURS);
-  val nCores = 24;
+  val nCores = 8;
   val throughput = 50;
   val testid = System.currentTimeMillis();
 
@@ -61,42 +61,42 @@ class HandlerTest extends WordSpec with Matchers {
     "perform with load 24" in {
       runScenario(24)
     }
-    "perform with load 26" in {
-      runScenario(26)
-    }
-    "perform with load 28" in {
-      runScenario(28)
-    }
-    "perform with load 30" in {
-      runScenario(30)
-    }
-    "perform with load 32" in {
-      runScenario(32)
-    }
-    "perform with load 34" in {
-      runScenario(34)
-    }
-    "perform with load 36" in {
-      runScenario(36)
-    }
-    "perform with load 38" in {
-      runScenario(38)
-    }
-    "perform with load 40" in {
-      runScenario(40)
-    }
-    "perform with load 42" in {
-      runScenario(42)
-    }
-    "perform with load 44" in {
-      runScenario(44)
-    }
-    "perform with load 46" in {
-      runScenario(46)
-    }
-    "perform with load 48" in {
-      runScenario(48)
-    }
+    //    "perform with load 26" in {
+    //      runScenario(26)
+    //    }
+    //    "perform with load 28" in {
+    //      runScenario(28)
+    //    }
+    //    "perform with load 30" in {
+    //      runScenario(30)
+    //    }
+    //    "perform with load 32" in {
+    //      runScenario(32)
+    //    }
+    //    "perform with load 34" in {
+    //      runScenario(34)
+    //    }
+    //    "perform with load 36" in {
+    //      runScenario(36)
+    //    }
+    //    "perform with load 38" in {
+    //      runScenario(38)
+    //    }
+    //    "perform with load 40" in {
+    //      runScenario(40)
+    //    }
+    //    "perform with load 42" in {
+    //      runScenario(42)
+    //    }
+    //    "perform with load 44" in {
+    //      runScenario(44)
+    //    }
+    //    "perform with load 46" in {
+    //      runScenario(46)
+    //    }
+    //    "perform with load 48" in {
+    //      runScenario(48)
+    //    }
 
   }
 

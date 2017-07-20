@@ -4,7 +4,7 @@ organization := "se.sics.kompics"
 
 version := "1.0.0-SNAPSHOT"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.2"
 
 scalacOptions ++= Seq("-deprecation","-feature")
 
@@ -15,7 +15,7 @@ resolvers += "Kompics Snapshots" at "http://kompics.sics.se/maven/snapshotreposi
 
 libraryDependencies += "se.sics.kompics" %% "kompics-scala" % version.value
 libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
-libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0"
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.7.1"
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.3"
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.3"
 libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.4"
